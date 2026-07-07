@@ -73,7 +73,7 @@ namespace CoinMarketAutomation
 					fullPath,
 					$"{element.Name}.csv");
 
-				A
+
 				using (var streamWriter = new StreamWriter(csvPath))
 				{
 
