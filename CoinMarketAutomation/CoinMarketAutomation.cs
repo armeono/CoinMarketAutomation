@@ -1,6 +1,10 @@
 using System;
-using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Skyline.DataMiner.Automation;
+using Skyline.DataMiner.Core.DataMinerSystem.Automation;
+using Skyline.DataMiner.Core.DataMinerSystem.Common;
+using Skyline.DataMiner.Utils.SecureCoding.SecureIO;
 
 namespace CoinMarketAutomation
 {
@@ -9,6 +13,7 @@ namespace CoinMarketAutomation
 	/// </summary>
 	public class Script
 	{
+
 		/// <summary>
 		/// The script entry point.
 		/// </summary>
@@ -48,15 +53,38 @@ namespace CoinMarketAutomation
 
 		private void RunSafe(IEngine engine)
 		{
-			engine.GenerateInformation("Masking all elements in view!");
 
-			IEnumerable<Element> elements = engine.FindElementsInView("Arman");
+			IDms thisDms = engine.GetDms();
 
-			foreach (Element element in elements)
+			var elements = thisDms.GetElements();
+			var filteredElements = elements.Where(element => element.Protocol.Name == "Exercise HTTP CoinMarketCap").ToList();
+
+			var folderName = engine.GetScriptParam(2).Value;
+
+			string fullPath = $"C:\\Skyline DataMiner\\Documents\\{folderName}";
+
+			Directory.CreateDirectory(fullPath);
+
+			filteredElements.ForEach(element =>
 			{
-				element.Mask("ReasonForMasking", 10);
-			}
+				var latestListingsTable = element.GetTable(500).GetData().ToList();
 
+				string csvPath = SecurePath.ConstructSecurePath(
+					fullPath,
+					$"{element.Name}.csv");
+
+
+				using (var streamWriter = new StreamWriter(csvPath))
+				{
+
+					streamWriter.WriteLine("Instance, Rank, Name, Symbol, Price, Market Cap, Volume 24h, Percent Change 1h, Percent Change 24h, Percent Change 7d, Circulating Supply, Total Supply, Number of Market Pairs, Max Supply, Last Updated");
+
+					latestListingsTable.ForEach(row =>
+					{
+						streamWriter.WriteLine(string.Join(", ", row.Value));
+					});
+				}
+			});
 
 		}
 	}
