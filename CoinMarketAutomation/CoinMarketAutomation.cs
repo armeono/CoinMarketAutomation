@@ -59,7 +59,7 @@ namespace CoinMarketAutomation
 			var elements = thisDms.GetElements();
 			var filteredElements = elements.Where(element => element.Protocol.Name == "Exercise HTTP CoinMarketCap").ToList();
 
-			var folderName = engine.GetScriptParam(2).Value;
+			var folderName = engine.GetScriptParam("File name").Value;
 
 			string fullPath = $"C:\\Skyline DataMiner\\Documents\\{folderName}";
 
@@ -73,7 +73,7 @@ namespace CoinMarketAutomation
 					fullPath,
 					$"{element.Name}.csv");
 
-
+				A
 				using (var streamWriter = new StreamWriter(csvPath))
 				{
 
